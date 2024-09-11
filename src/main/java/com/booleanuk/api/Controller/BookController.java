@@ -2,8 +2,10 @@ package com.booleanuk.api.Controller;
 
 import com.booleanuk.api.Model.Author;
 import com.booleanuk.api.Model.Book;
+import com.booleanuk.api.Model.Publisher;
 import com.booleanuk.api.Repository.AuthorRepository;
 import com.booleanuk.api.Repository.BookRepository;
+import com.booleanuk.api.Repository.PublisherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,16 +19,39 @@ import java.util.List;
 class BookController {
 
     @Autowired
-    private final BookRepository repository;
+    private BookRepository repository;
 
-    public BookController(BookRepository repository) {
-        this.repository = repository;
-    }
+    @Autowired
+    private AuthorRepository authorRepository;
+
+    @Autowired
+    private PublisherRepository publisherRepository;
 
     @PostMapping
     public ResponseEntity<Book> createBook(@RequestBody Book book){
-        return new ResponseEntity<Book>(this.repository.save(book),
+
+
+        try {
+
+
+            Author author = this.authorRepository.findById(
+                book.getAuthor().getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No author with that id exists")
+            );
+
+            Publisher publisher = this.publisherRepository.findById(
+                    book.getPublisher().getId()).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No publisher with that id exists")
+            );
+
+            book.setAuthor(author);
+            book.setPublisher(publisher);
+            return new ResponseEntity<Book>(this.repository.save(book),
                 HttpStatus.CREATED);
+
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not create book, please check all required fields are correct.");
+        }
 
 
     }
@@ -40,7 +65,10 @@ class BookController {
 
     @GetMapping("{id}")
     public Book getById(@PathVariable("id") Integer id) {
-        return this.repository.findById(id).orElseThrow();
+        return this.repository.findById(id).orElseThrow(
+                ()->new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No book with that ID found")
+        );
     }
 
     @PutMapping("{id}")

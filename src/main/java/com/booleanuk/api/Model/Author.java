@@ -2,25 +2,56 @@ package com.booleanuk.api.Model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
-@Table(name="Authors")
+@Table(name="authors")
 public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String first_name;
-    private String last_name;
+    @Column(nullable = false)
+    private String firstName;
+
+    @Column(nullable = false)
+    private String lastName;
+
+    @Column(nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private boolean alive;
+
+    @OneToMany(mappedBy = "author")
+    private List<Book> books;
+
+    public Author(String firstName, String lastName, String email, boolean alive){
+        this.firstName=firstName;
+        this.lastName =lastName;
+        this.alive=alive;
+        this.email=email;
+    }
+
+    public Author(int id){
+        this.id=id;
+    }
+
+    public Author(){
+
+    }
+
+
+
+
 
     public Integer getId() {return id;}
 
     public String getEmail() { return email;}
 
-    public String getFirst_name() {return first_name;}
+    public String getFirstName() {return firstName;}
 
-    public String getLast_name() {return last_name;}
+    public String getLastName() {return lastName;}
 
     public boolean isAlive() {return alive;}
 
@@ -30,7 +61,7 @@ public class Author {
 
     public void setAlive(boolean alive) {this.alive = alive;}
 
-    public void setFirst_name(String first_name) {this.first_name = first_name;}
+    public void setFirstName(String firstName) {this.firstName = firstName;}
 
-    public void setLast_name(String last_name) {this.last_name = last_name;}
+    public void setLastName(String lastName) {this.lastName = lastName;}
 }

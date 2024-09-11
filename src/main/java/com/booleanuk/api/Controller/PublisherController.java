@@ -13,7 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("publisher")
+@RequestMapping("publishers")
 public class PublisherController {
     @Autowired
     private final PublisherRepository repository;
@@ -24,10 +24,12 @@ public class PublisherController {
 
     @PostMapping
     public ResponseEntity<Publisher> createPublisher(@RequestBody Publisher publisher){
-        return new ResponseEntity<Publisher>(this.repository.save(publisher),
-                HttpStatus.CREATED);
-
-
+        try {
+            return new ResponseEntity<Publisher>(this.repository.save(publisher),
+                    HttpStatus.CREATED);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not create publisher, please check all required fields are correct.");
+        }
     }
 
     @GetMapping
@@ -39,7 +41,10 @@ public class PublisherController {
 
     @GetMapping("{id}")
     public Publisher getById(@PathVariable("id") Integer id) {
-        return this.repository.findById(id).orElseThrow();
+        return this.repository.findById(id).orElseThrow(
+                ()->new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No publisher with that ID found")
+        );
     }
 
     @PutMapping("{id}")

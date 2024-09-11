@@ -23,8 +23,12 @@ public class AuthorController {
 
     @PostMapping
     public ResponseEntity<Author> createAuthor(@RequestBody Author author){
-        return new ResponseEntity<Author>(this.repository.save(author),
-                HttpStatus.CREATED);
+        try {
+            return new ResponseEntity<Author>(this.repository.save(author),
+                    HttpStatus.CREATED);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not create author, please check all required fields are correct.");
+        }
 
 
     }
@@ -38,7 +42,9 @@ public class AuthorController {
 
     @GetMapping("{id}")
     public Author getById(@PathVariable("id") Integer id) {
-        return this.repository.findById(id).orElseThrow();
+        return this.repository.findById(id).orElseThrow(
+                ()->new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "No author with that ID found"));
     }
 
     @PutMapping("{id}")
@@ -48,8 +54,8 @@ public class AuthorController {
                 ()->new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "No author with that ID found")
         );
-        authorToUpdate.setFirst_name(author.getFirst_name());
-        authorToUpdate.setLast_name(author.getLast_name());
+        authorToUpdate.setFirstName(author.getFirstName());
+        authorToUpdate.setLastName(author.getLastName());
         authorToUpdate.setEmail(author.getEmail());
         authorToUpdate.setAlive(author.isAlive());
         return new ResponseEntity<Author>(this.repository.save(authorToUpdate
